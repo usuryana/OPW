@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Report Designer - Label Roll Product</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400;1,500&family=Roboto+Mono:ital,wght@0,400;0,500;1,400;1,500&family=Source+Code+Pro:ital,wght@0,400;0,500;1,400;1,500&family=Fira+Code:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400;1,500&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Space+Grotesk:wght@0,400;0,500;0,600;0,700&family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg:#0c0f14;--surface:#151921;--card:#1a1f2b;--card-hover:#212838;
+            --border:#2a3142;--border-light:#353e52;--fg:#e8ecf4;--fg-muted:#7a8599;
+            --fg-dim:#4e5a6e;--accent:#22d3a7;--accent-dim:rgba(34,211,167,.12);
+            --accent-glow:rgba(34,211,167,.25);--warn:#f59e0b;--warn-dim:rgba(245,158,11,.12);
+            --danger:#ef4444;--danger-dim:rgba(239,68,68,.12);--info:#38bdf8;
+            --info-dim:rgba(56,189,248,.12);--purple:#a855f7;--purple-dim:rgba(168,85,247,.12);
+            --radius:14px;--radius-sm:8px;--sidebar-w:310px;--props-w:290px;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow:hidden}
+        body::before{content:'';position:fixed;top:-30%;left:-10%;width:60%;height:60%;background:radial-gradient(circle,rgba(34,211,167,.04)0%,transparent 70%);pointer-events:none}
+        body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(56,189,248,.03)0%,transparent 70%);pointer-events:none}
+        .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+
+        .header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px;flex-wrap:wrap}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .header-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#0ea5e9);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#000;font-weight:700;box-shadow:0 4px 16px var(--accent-glow);flex-shrink:0}
+        .header-title{font-size:1.15rem;font-weight:700;letter-spacing:-.3px}
+        .header-sub{font-size:.72rem;color:var(--fg-muted);margin-top:1px}
+        .header-actions{display:flex;gap:6px;align-items:center}
+
+        .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:40px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:.75rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+        .btn:hover{background:var(--card-hover);border-color:var(--border-light)}
+        .btn-accent{background:var(--accent);color:#000;border-color:var(--accent)}
+        .btn-accent:hover{background:#1bc496;box-shadow:0 2px 16px var(--accent-glow)}
+        .btn-sm{padding:5px 10px;font-size:.7rem}
+        .btn-xs{padding:3px 7px;font-size:.62rem;border-radius:6px}
+        .btn-ghost{background:transparent;border-color:transparent}
+        .btn-ghost:hover{background:var(--card);border-color:var(--border)}
+        .btn-danger{border-color:var(--danger);color:var(--danger)}
+        .btn-danger:hover{background:var(--danger-dim)}
+        .btn-info{border-color:var(--info);color:var(--info)}
+        .btn-info:hover{background:var(--info-dim)}
+        .btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:10px}
+
+        .main-layout{display:flex;flex:1;overflow:hidden;position:relative}
+
+        .sidebar-left{width:var(--sidebar-w);flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:12px 12px 12px 16px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;overflow-x:hidden;transition:margin-left .35s cubic-bezier(.4,0,.2,1),opacity .25s;scrollbar-width:thin;scrollbar-color:var(--border) transparent;z-index:10}
+        .sidebar-left.hidden{margin-left:calc(var(--sidebar-w)*-1);opacity:0;pointer-events:none}
+
+        .canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+        .canvas-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:6px}
+        .toolbar-group{display:flex;align-items:center;gap:5px}
+        .toolbar-label{font-size:.65rem;color:var(--fg-dim);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+        .toolbar-val{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent);font-weight:500}
+        .toolbar-val-dim{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--fg-dim)}
+        .zoom-display{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent);min-width:40px;text-align:center;font-weight:600}
+
+        .canvas-viewport{flex:1;background:var(--surface);overflow:auto;display:flex;align-items:center;justify-content:center;position:relative;background-image:radial-gradient(circle at 1px 1px,var(--border) .5px,transparent .5px);background-size:20px 20px}
+        .canvas-frame{position:relative;box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.05);border-radius:4px;flex-shrink:0;transition:box-shadow .2s}
+        .canvas-frame:hover{box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(34,211,167,.15)}
+        .canvas-frame canvas{display:block;border-radius:3px}
+        .label-size-indicator{position:absolute;bottom:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--fg-dim);background:rgba(0,0,0,.6);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)}
+
+        .sidebar-right{width:var(--props-w);flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:12px 16px 12px 12px;border-left:1px solid var(--border);background:var(--surface);overflow-y:auto;overflow-x:hidden;transition:margin-right .35s cubic-bezier(.4,0,.2,1),opacity .25s;scrollbar-width:thin;scrollbar-color:var(--border) transparent;z-index:10}
+        .sidebar-right.hidden{margin-right:calc(var(--props-w)*-1);opacity:0;pointer-events:none}
+
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+        .panel-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--fg-muted);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+        .panel-title i{color:var(--accent);font-size:.75rem}
+        .panel-title .count{margin-left:auto;font-size:.6rem;background:var(--surface);padding:2px 7px;border-radius:10px;color:var(--fg-dim);font-family:'JetBrains Mono',monospace}
+
+        .field{margin-bottom:8px}.field:last-child{margin-bottom:0}
+        .field-label{font-size:.64rem;font-weight:600;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;display:block}
+        .field-row{display:flex;gap:6px}.field-row .field{flex:1}
+
+        input[type="number"],input[type="text"],select{width:100%;padding:6px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--fg);font-size:.8rem;font-family:'JetBrains Mono',monospace;transition:border-color .15s}
+        input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+        select{cursor:pointer;appearance:none;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a8599' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+
+        .preset-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+        .chip{padding:3px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--fg-muted);font-size:.62rem;font-weight:500;cursor:pointer;transition:all .12s;font-family:'JetBrains Mono',monospace}
+        .chip:hover{border-color:var(--accent);color:var(--accent)}
+        .chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+        .item-list{display:flex;flex-direction:column;gap:2px;max-height:100%;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+        .item-row{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:all .1s;font-size:.73rem}
+        .item-row:hover{background:var(--card-hover)}
+        .item-row:hover .item-delete{opacity:1}
+        .item-row.active{background:var(--accent-dim);border-color:var(--accent)}
+        .item-type-badge{width:26px;height:18px;border-radius:4px;font-size:.55rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+        .badge-1d{background:var(--info-dim);color:var(--info)}
+        .badge-1t{background:var(--warn-dim);color:var(--warn)}
+        .badge-3d{background:var(--purple-dim);color:var(--purple)}
+        .item-info{flex:1;min-width:0}
+        .item-name{font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.7rem}
+        .item-coord{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--fg-dim)}
+        .item-delete{opacity:0;width:20px;height:20px;border-radius:5px;border:none;background:var(--danger-dim);color:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.55rem;transition:all .15s;flex-shrink:0}
+        .item-delete:hover{background:var(--danger);color:#fff}
+
+        .toggle-wrap{display:flex;align-items:center;gap:5px}
+        .toggle{width:30px;height:16px;border-radius:10px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+        .toggle.on{background:var(--accent)}
+        .toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s}
+        .toggle.on::after{transform:translateX(14px)}
+
+        /* Bold / Italic toggle buttons */
+        .style-toggles{display:flex;gap:4px;align-items:center}
+        .style-toggle{
+            width:32px;height:28px;border-radius:6px;border:1px solid var(--border);
+            background:var(--surface);color:var(--fg-dim);cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            font-size:.82rem;transition:all .12s;flex-shrink:0;
+        }
+        .style-toggle:hover{border-color:var(--border-light);color:var(--fg-muted);background:var(--card-hover)}
+        .style-toggle.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+        .style-toggle.st-italic{font-style:italic}
+        .style-sep{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0}
+
+        .prop-empty{text-align:center;padding:20px 10px;color:var(--fg-dim)}
+        .prop-empty i{font-size:1.6rem;margin-bottom:6px;display:block;opacity:.5}
+        .prop-empty p{font-size:.75rem}
+        .prop-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .prop-actions{margin-left:auto;display:flex;gap:3px}
+        .prop-value-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:.72rem}
+        .prop-value-row .pv-label{color:var(--fg-dim);min-width:46px;font-size:.6rem;text-transform:uppercase;font-weight:600;letter-spacing:.3px}
+        .prop-value-row .pv-val{font-family:'JetBrains Mono',monospace;color:var(--fg);font-size:.72rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+        .toast-container{position:fixed;bottom:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+        .toast{padding:8px 14px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);color:var(--fg);font-size:.75rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;animation:toastIn .25s ease-out;max-width:320px}
+        .toast.success i{color:var(--accent)}.toast.info i{color:var(--info)}.toast.warn i{color:var(--warn)}.toast.error i{color:var(--danger)}
+        @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+        .modal-overlay.show{opacity:1;pointer-events:all}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:440px;width:92%;transform:scale(.95);transition:transform .2s;max-height:90vh;overflow-y:auto}
+        .modal-overlay.show .modal{transform:scale(1)}
+        .modal-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .modal-header-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+        .modal-header-icon.green{background:var(--accent-dim);color:var(--accent)}
+        .modal-header-icon.red{background:var(--danger-dim);color:var(--danger)}
+        .modal-header-icon.blue{background:var(--info-dim);color:var(--info)}
+        .modal h3{font-size:.95rem;font-weight:700}
+        .modal p{font-size:.78rem;color:var(--fg-muted);margin-bottom:14px;line-height:1.5}
+        .modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:16px}
+        .modal-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+        .type-selector{display:flex;gap:5px;flex-wrap:wrap}
+        .type-option{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-muted);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:4px}
+        .type-option:hover{border-color:var(--border-light);color:var(--fg)}
+        .type-option.active-1d{border-color:var(--info);color:var(--info);background:var(--info-dim)}
+        .type-option.active-1t{border-color:var(--warn);color:var(--warn);background:var(--warn-dim)}
+        .type-option.active-3d{border-color:var(--purple);color:var(--purple);background:var(--purple-dim)}
+
+        .info-bar{display:flex;align-items:center;gap:14px;padding:6px 16px;background:var(--card);border-top:1px solid var(--border);font-size:.65rem;color:var(--fg-dim);flex-shrink:0;flex-wrap:wrap}
+        .info-bar span{display:flex;align-items:center;gap:3px}
+        .info-bar i{font-size:.6rem}
+        .info-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+        .sidebar-toggle{position:fixed;top:50%;transform:translateY(-50%);z-index:20;width:22px;height:48px;background:var(--card);border:1px solid var(--border);color:var(--fg-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:all .2s}
+        .sidebar-toggle:hover{color:var(--accent);border-color:var(--accent);background:var(--card-hover)}
+        .toggle-left{left:0;border-radius:0 8px 8px 0;border-left:none}
+        .toggle-left.shifted{left:var(--sidebar-w)}
+        .toggle-right{right:0;border-radius:8px 0 0 8px;border-right:none}
+        .toggle-right.shifted{right:var(--props-w)}
+        .sidebar-toggle i{transition:transform .3s}
+        .toggle-left.shifted i{transform:rotate(180deg)}
+        .toggle-right.shifted i{transform:rotate(180deg)}
+
+        .empty-state{text-align:center;padding:20px 10px;color:var(--fg-dim)}
+        .empty-state i{font-size:1.8rem;margin-bottom:6px;display:block;opacity:.4}
+        .empty-state p{font-size:.73rem}
+
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
+        @media(max-width:900px){.sidebar-left,.sidebar-right{position:fixed;top:0;bottom:0;z-index:50}.sidebar-left{left:0}.sidebar-right{right:0}.sidebar-left.hidden{left:calc(var(--sidebar-w)*-1)}.sidebar-right.hidden{right:calc(var(--props-w)*-1)}.toggle-left,.toggle-right{z-index:60}}
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon"><i class="fa-solid fa-tag"></i></div>
+            <div>
+                <div class="header-title">Report Designer</div>
+                <div class="header-sub">Label Roll Product — bold, italic, font per elemen</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-sm btn-accent" id="btnAddElement"><i class="fa-solid fa-plus"></i> Tambah Elemen</button>
+            <button class="btn btn-sm" id="btnExportConfig"><i class="fa-solid fa-code"></i> Export JSON</button>
+            <button class="btn btn-sm btn-icon" id="btnRefresh" title="Refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Sidebar Kiri -->
+        <div class="sidebar-left" id="sidebarLeft">
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-ruler-combined"></i> Ukuran Label</div>
+                <div class="field-row">
+                    <div class="field"><label class="field-label">Lebar (mm)</label><input type="number" id="labelW" value="650" min="50" max="2000" step="10"></div>
+                    <div class="field"><label class="field-label">Tinggi (mm)</label><input type="number" id="labelH" value="550" min="50" max="2000" step="10"></div>
+                </div>
+                <button class="btn btn-accent btn-sm" style="width:100%;justify-content:center;margin-top:5px" id="btnApplyLabelSize"><i class="fa-solid fa-check"></i> Terapkan</button>
+                <div class="preset-chips" id="presetChips"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-magnifying-glass"></i> Zoom & Grid</div>
+                <div class="toolbar-group" style="width:100%;justify-content:space-between">
+                    <button class="btn btn-xs btn-ghost" id="btnZoomOut"><i class="fa-solid fa-minus"></i></button>
+                    <span class="zoom-display" id="zoomDisplay">100%</span>
+                    <button class="btn btn-xs btn-ghost" id="btnZoomIn"><i class="fa-solid fa-plus"></i></button>
+                    <button class="btn btn-xs btn-ghost" id="btnZoomFit" title="Fit"><i class="fa-solid fa-expand"></i></button>
+                </div>
+                <div style="margin-top:8px" class="toggle-wrap"><div class="toggle on" id="toggleSnap"></div><span style="font-size:.7rem;color:var(--fg-muted)">Snap 5mm</span></div>
+                <div style="margin-top:6px" class="toggle-wrap"><div class="toggle on" id="toggleGuides"></div><span style="font-size:.7rem;color:var(--fg-muted)">Panduan</span></div>
+            </div>
+            <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column">
+                <div class="panel-title"><i class="fa-solid fa-layer-group"></i> Daftar Elemen <span class="count" id="itemCount">0</span></div>
+                <div class="item-list" id="itemList"></div>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-area">
+            <div class="canvas-toolbar">
+                <div class="toolbar-group"><span class="toolbar-label">Label</span><span class="toolbar-val" id="toolbarSize">650×550</span></div>
+                <div class="toolbar-group"><span class="toolbar-label">Elemen</span><span class="toolbar-val-dim" id="toolbarSelected">—</span></div>
+                <div class="toolbar-group"><span class="toolbar-label">Mouse</span><span class="toolbar-val-dim" id="toolbarMouse">—</span></div>
+            </div>
+            <div class="canvas-viewport" id="canvasViewport">
+                <div class="canvas-frame" id="canvasFrame"><canvas id="labelCanvas"></canvas></div>
+                <div class="label-size-indicator" id="sizeIndicator">650×550 mm</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Kanan: Properti -->
+        <div class="sidebar-right" id="sidebarRight">
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-sliders"></i> Properti Elemen</div>
+                <div id="propEmpty" class="prop-empty">
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                    <p>Klik elemen untuk melihat properti</p>
+                </div>
+                <div id="propContent" style="display:none">
+                    <div class="prop-header">
+                        <span class="item-type-badge" id="propTypeBadge">—</span>
+                        <span id="propAliasDisplay" style="font-size:.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                        <div class="prop-actions">
+                            <button class="btn btn-xs btn-info" id="btnEditInModal" title="Edit lengkap"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn btn-xs btn-danger" id="btnDeleteSelected" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="prop-value-row"><span class="pv-label">Seq</span><span class="pv-val" id="propSeq">—</span></div>
+                    <div class="prop-value-row"><span class="pv-label">Source</span><span class="pv-val" id="propSource">—</span></div>
+                    <div class="prop-value-row"><span class="pv-label">Teks</span><span class="pv-val" id="propTextPreview" style="word-break:break-all;font-size:.64rem;color:var(--fg-muted)">—</span></div>
+                    <hr class="modal-divider">
+
+                    <!-- Font + Bold + Italic dalam satu baris -->
+                    <div class="field">
+                        <label class="field-label"><i class="fa-solid fa-font" style="margin-right:3px;color:var(--warn)"></i> Font & Style</label>
+                        <div class="style-toggles">
+                            <button type="button" class="style-toggle" id="propBold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                            <button type="button" class="style-toggle st-italic" id="propItalic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                            <div class="style-sep"></div>
+                            <select id="propFont" style="flex:1;min-width:0" class="font-select"></select>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field"><label class="field-label">X</label><input type="number" id="propX" step="1"></div>
+                        <div class="field"><label class="field-label">Y</label><input type="number" id="propY" step="1"></div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field"><label class="field-label">Width</label><input type="number" id="propW" step="1" min="10"></div>
+                        <div class="field"><label class="field-label">Height</label><input type="number" id="propH" step="1" min="10"></div>
+                    </div>
+                    <div class="field"><label class="field-label">Font Size</label><input type="number" id="propFS" step="1" min="6" max="72"></div>
+                    <div class="field"><label class="field-label">Custom Text</label><input type="text" id="propCustomText" placeholder="(kosongkan = source)"></div>
+                    <div style="display:flex;gap:5px;margin-top:8px">
+                        <button class="btn btn-accent btn-sm" id="btnApplyProp" style="flex:1;justify-content:center"><i class="fa-solid fa-check"></i> Terapkan</button>
+                        <button class="btn btn-sm" id="btnResetPos" style="flex:1;justify-content:center"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-bar">
+        <span><span class="info-dot"></span> Data aktif</span>
+        <span><i class="fa-solid fa-hand-pointer"></i> Klik pilih, drag pindah</span>
+        <span><i class="fa-solid fa-keyboard"></i> Arrow nudge, Del hapus, Esc batal</span>
+        <span><i class="fa-solid fa-bold"></i><i class="fa-solid fa-italic"></i> Bold & italic per elemen</span>
+    </div>
+</div>
+
+<button class="sidebar-toggle toggle-left shifted" id="toggleLeftBtn" title="Toggle sidebar kiri"><i class="fa-solid fa-chevron-left"></i></button>
+<button class="sidebar-toggle toggle-right shifted" id="toggleRightBtn" title="Toggle sidebar kanan"><i class="fa-solid fa-chevron-right"></i></button>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Modal: Tambah -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <div class="modal-header"><div class="modal-header-icon green"><i class="fa-solid fa-plus"></i></div><div><h3>Tambah Elemen Baru</h3><p style="margin:0;font-size:.68rem">Pilih tipe dan konfigurasi</p></div></div>
+        <label class="field-label">Tipe Elemen</label>
+        <div class="type-selector" id="addTypeSelector">
+            <div class="type-option active-1d" data-type="1D"><i class="fa-solid fa-database"></i> 1D Data</div>
+            <div class="type-option" data-type="1T"><i class="fa-solid fa-font"></i> 1T Teks</div>
+            <div class="type-option" data-type="3D"><i class="fa-solid fa-barcode"></i> 3D Barcode</div>
+        </div>
+        <hr class="modal-divider">
+        <div id="addFieldSource"><div class="field"><label class="field-label">Source Data</label><select id="addSource"></select></div></div>
+        <div id="addFieldText" style="display:none"><div class="field"><label class="field-label">Teks Statis</label><input type="text" id="addText" placeholder="Masukkan teks..."></div></div>
+        <div class="field"><label class="field-label">Alias</label><input type="text" id="addAlias" placeholder="Contoh: Header Baris 3"></div>
+        <hr class="modal-divider">
+        <div class="field">
+            <label class="field-label"><i class="fa-solid fa-font" style="margin-right:3px;color:var(--warn)"></i> Font & Style</label>
+            <div class="style-toggles">
+                <button type="button" class="style-toggle" id="addBold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" class="style-toggle st-italic" id="addItalic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                <div class="style-sep"></div>
+                <select id="addFont" style="flex:1;min-width:0" class="font-select"></select>
+            </div>
+        </div>
+        <div class="field-row"><div class="field"><label class="field-label">X</label><input type="number" id="addX" value="20" step="5"></div><div class="field"><label class="field-label">Y</label><input type="number" id="addY" value="320" step="5"></div></div>
+        <div class="field-row"><div class="field"><label class="field-label">Width</label><input type="number" id="addW" value="200" step="5" min="10"></div><div class="field"><label class="field-label">Height</label><input type="number" id="addH" value="24" step="5" min="10"></div></div>
+        <div class="field"><label class="field-label">Font Size</label><input type="number" id="addFS" value="12" step="1" min="6" max="72"></div>
+        <div class="modal-actions"><button class="btn btn-sm" id="addCancel">Batal</button><button class="btn btn-sm btn-accent" id="addConfirm"><i class="fa-solid fa-plus"></i> Tambah</button></div>
+    </div>
+</div>
+
+<!-- Modal: Edit -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header"><div class="modal-header-icon blue"><i class="fa-solid fa-pen-to-square"></i></div><div><h3>Edit Elemen</h3><p style="margin:0;font-size:.68rem" id="editModalSub">—</p></div></div>
+        <div class="field"><label class="field-label">Tipe Elemen</label>
+            <div class="type-selector" id="editTypeSelector">
+                <div class="type-option" data-type="1D"><i class="fa-solid fa-database"></i> 1D Data</div>
+                <div class="type-option" data-type="1T"><i class="fa-solid fa-font"></i> 1T Teks</div>
+                <div class="type-option" data-type="3D"><i class="fa-solid fa-barcode"></i> 3D Barcode</div>
+            </div>
+        </div>
+        <hr class="modal-divider">
+        <div id="editFieldSource"><div class="field"><label class="field-label">Source Data</label><select id="editSource"></select></div></div>
+        <div id="editFieldText" style="display:none"><div class="field"><label class="field-label">Teks Statis / Custom</label><input type="text" id="editText" placeholder="Masukkan teks..."></div></div>
+        <div class="field"><label class="field-label">Alias</label><input type="text" id="editAlias"></div>
+        <hr class="modal-divider">
+        <div class="field">
+            <label class="field-label"><i class="fa-solid fa-font" style="margin-right:3px;color:var(--warn)"></i> Font & Style</label>
+            <div class="style-toggles">
+                <button type="button" class="style-toggle" id="editBold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" class="style-toggle st-italic" id="editItalic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                <div class="style-sep"></div>
+                <select id="editFont" style="flex:1;min-width:0" class="font-select"></select>
+            </div>
+        </div>
+        <div class="field-row"><div class="field"><label class="field-label">X</label><input type="number" id="editX" step="1"></div><div class="field"><label class="field-label">Y</label><input type="number" id="editY" step="1"></div></div>
+        <div class="field-row"><div class="field"><label class="field-label">Width</label><input type="number" id="editW" step="1" min="10"></div><div class="field"><label class="field-label">Height</label><input type="number" id="editH" step="1" min="10"></div></div>
+        <div class="field"><label class="field-label">Font Size</label><input type="number" id="editFS" step="1" min="6" max="72"></div>
+        <div class="modal-actions"><button class="btn btn-sm" id="editCancel">Batal</button><button class="btn btn-sm btn-accent" id="editConfirm"><i class="fa-solid fa-check"></i> Simpan</button></div>
+    </div>
+</div>
+
+<!-- Modal: Hapus -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-header"><div class="modal-header-icon red"><i class="fa-solid fa-trash"></i></div><div><h3 id="deleteTitle">Hapus Elemen</h3><p style="margin:0;font-size:.68rem" id="deleteModalSub">—</p></div></div>
+        <p id="deleteMsg">Elemen yang dihapus tidak dapat dikembalikan.</p>
+        <div class="modal-actions"><button class="btn btn-sm" id="deleteCancel">Batal</button><button class="btn btn-sm btn-danger" id="deleteConfirm"><i class="fa-solid fa-trash"></i> Ya, Hapus</button></div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// DAFTAR FONT
+// ============================================================
+const FONT_LIST = [
+    {value:"'JetBrains Mono', monospace",label:"JetBrains Mono",cat:"mono"},
+    {value:"'Roboto Mono', monospace",label:"Roboto Mono",cat:"mono"},
+    {value:"'Source Code Pro', monospace",label:"Source Code Pro",cat:"mono"},
+    {value:"'Fira Code', monospace",label:"Fira Code",cat:"mono"},
+    {value:"'IBM Plex Mono', monospace",label:"IBM Plex Mono",cat:"mono"},
+    {value:"'Courier New', monospace",label:"Courier New",cat:"mono"},
+    {value:"'Lucida Console', monospace",label:"Lucida Console",cat:"mono"},
+    {value:"'DM Sans', sans-serif",label:"DM Sans",cat:"sans"},
+    {value:"'Inter', sans-serif",label:"Inter",cat:"sans"},
+    {value:"'Poppins', sans-serif",label:"Poppins",cat:"sans"},
+    {value:"'Nunito Sans', sans-serif",label:"Nunito Sans",cat:"sans"},
+    {value:"'Space Grotesk', sans-serif",label:"Space Grotesk",cat:"sans"},
+    {value:"Arial, sans-serif",label:"Arial",cat:"sans"},
+    {value:"'Segoe UI', sans-serif",label:"Segoe UI",cat:"sans"},
+    {value:"Verdana, sans-serif",label:"Verdana",cat:"sans"},
+    {value:"Tahoma, sans-serif",label:"Tahoma",cat:"sans"},
+    {value:"'Trebuchet MS', sans-serif",label:"Trebuchet MS",cat:"sans"},
+    {value:"Georgia, serif",label:"Georgia",cat:"serif"},
+    {value:"'Times New Roman', serif",label:"Times New Roman",cat:"serif"},
+    {value:"'Bebas Neue', sans-serif",label:"Bebas Neue",cat:"display"},
+    {value:"'Oswald', sans-serif",label:"Oswald",cat:"display"},
+];
+const DEFAULT_FONT = "'JetBrains Mono', monospace";
+
+function populateFontSelect(sel, cur) {
+    sel.innerHTML = '';
+    const groups = {mono:'Monospace',sans:'Sans-Serif',serif:'Serif',display:'Display'};
+    for (const [k, lbl] of Object.entries(groups)) {
+        const g = document.createElement('optgroup'); g.label = lbl;
+        FONT_LIST.filter(f => f.cat === k).forEach(f => {
+            const o = document.createElement('option'); o.value = f.value; o.textContent = f.label;
+            if (f.value === cur) o.selected = true; g.appendChild(o);
+        }); sel.appendChild(g);
+    }
+}
+
+// Baca state bold/italic dari toggle button
+function readStyleToggle(boldId, italicId) {
+    return { bold: document.getElementById(boldId).classList.contains('active'), italic: document.getElementById(italicId).classList.contains('active') };
+}
+// Set state bold/italic ke toggle button
+function setStyleToggle(boldId, italicId, bold, italic) {
+    document.getElementById(boldId).classList.toggle('active', !!bold);
+    document.getElementById(italicId).classList.toggle('active', !!italic);
+}
+
+// Pasang click handler untuk semua toggle bold/italic
+function initStyleToggle(boldId, italicId, onChange) {
+    document.getElementById(boldId).addEventListener('click', () => {
+        document.getElementById(boldId).classList.toggle('active');
+        if (onChange) onChange();
+    });
+    document.getElementById(italicId).addEventListener('click', () => {
+        document.getElementById(italicId).classList.toggle('active');
+        if (onChange) onChange();
+    });
+}
+
+// ============================================================
+// DATA
+// ============================================================
+const dynamicData = {
+    "P_DATE_WOUND":"02/01/2026 10:04","UNIT_ID":"IKLM190326A00003","GRAMMA":"GSM 300.00",
+    "P_LENGTH_ACTUAL":"4725","P_SET_NO":"1","P_SET_POSITION_NO":"1","P_CLASSIFICATION":"A",
+    "P_PRODUCT_CODE":"P1C007300B1BMS","P_WIDTH":"1110","P_DIAMETER_ACTUAL":"1617",
+    "P_CORE_CODE":"0615","P_NBR_OF_SPLICES":"0","P_PRODUCT_DESTINAT":"RW","P_UNIT_DESTINATION":"8800013"
+};
+const sourceList = Object.entries(dynamicData).map(([k,v])=>({key:k,label:`${k}  (${v})`}));
+
+function getDefaultItems(){
+    return [
+        {seq:1,x:300,y:12,type:"1D",source:"P_DATE_WOUND",alias:"Wound Date/Time",width:180,height:22,fontSize:12,fontFamily:"'DM Sans', sans-serif",fontBold:false,fontItalic:false,customText:null},
+        {seq:2,x:30,y:40,type:"3D",source:"UNIT_ID",alias:"Barcode Roll ID",width:260,height:48,fontSize:9,fontFamily:"'Courier New', monospace",fontBold:false,fontItalic:false,isBarcode:true,customText:null},
+        {seq:3,x:180,y:110,type:"1D",source:"UNIT_ID",alias:"Roll ID Text",width:240,height:30,fontSize:16,fontFamily:"'JetBrains Mono', monospace",fontBold:true,fontItalic:false,customText:null},
+        {seq:4,x:18,y:175,type:"1T",source:null,alias:"Header Baris 1",width:400,height:22,fontSize:12,fontFamily:"'DM Sans', sans-serif",fontBold:true,fontItalic:false,customText:"GSM        Length      Set    Pos   Quality   Grade Spec"},
+        {seq:5,x:18,y:205,type:"1D",source:"GRAMMA",alias:"GSM Value",width:90,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:6,x:120,y:205,type:"1D",source:"P_LENGTH_ACTUAL",alias:"Length Value",width:80,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:7,x:210,y:205,type:"1D",source:"P_SET_NO",alias:"Set Value",width:50,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:8,x:275,y:205,type:"1D",source:"P_SET_POSITION_NO",alias:"Pos Value",width:50,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:9,x:345,y:205,type:"1D",source:"P_CLASSIFICATION",alias:"Quality Value",width:50,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:10,x:410,y:205,type:"1D",source:"P_PRODUCT_CODE",alias:"Grade Spec Value",width:220,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:11,x:18,y:245,type:"1T",source:null,alias:"Header Baris 2",width:400,height:22,fontSize:12,fontFamily:"'DM Sans', sans-serif",fontBold:true,fontItalic:false,customText:"Width    Dia    Core    Splice   Destination    Run"},
+        {seq:12,x:18,y:275,type:"1D",source:"P_WIDTH",alias:"Width Value",width:70,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:13,x:100,y:275,type:"1D",source:"P_DIAMETER_ACTUAL",alias:"Dia Value",width:70,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:14,x:185,y:275,type:"1D",source:"P_CORE_CODE",alias:"Core Value",width:60,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:15,x:260,y:275,type:"1D",source:"P_NBR_OF_SPLICES",alias:"Splice Value",width:50,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:16,x:330,y:275,type:"1D",source:"P_PRODUCT_DESTINAT",alias:"Destination Value",width:50,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+        {seq:17,x:410,y:275,type:"1D",source:"P_UNIT_DESTINATION",alias:"Run Value",width:100,height:22,fontSize:12,fontFamily:DEFAULT_FONT,fontBold:false,fontItalic:false,customText:null},
+    ];
+}
+
+let designItems = getDefaultItems();
+let nextSeq = 18;
+const labelPresets = [
+    {name:"650×550",w:650,h:550},{name:"400×300",w:400,h:300},{name:"500×400",w:500,h:400},
+    {name:"800×600",w:800,h:600},{name:"200×150",w:200,h:150},{name:"300×200",w:300,h:200},
+    {name:"A6",w:105,h:148},{name:"A5",w:148,h:210},{name:"A4",w:210,h:297},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let labelW=650,labelH=550,zoom=1.0,snapEnabled=true,guidesEnabled=true;
+let selectedIndex=-1,dragging=false,dragOffsetX=0,dragOffsetY=0;
+let editingIndex=-1,deletingIndex=-1,addModalType="1D",editModalType="1D";
+let leftVisible=true,rightVisible=true;
+
+const canvas=document.getElementById('labelCanvas'),ctx=canvas.getContext('2d');
+const canvasFrame=document.getElementById('canvasFrame'),viewport=document.getElementById('canvasViewport');
+const sidebarLeft=document.getElementById('sidebarLeft'),sidebarRight=document.getElementById('sidebarRight');
+const toggleLeftBtn=document.getElementById('toggleLeftBtn'),toggleRightBtn=document.getElementById('toggleRightBtn');
+
+// ============================================================
+// UTILITAS
+// ============================================================
+const snap=v=>snapEnabled?Math.round(v/5)*5:Math.round(v);
+function getItemText(it){return it.customText||(it.source&&dynamicData[it.source])||"—"}
+function showToast(msg,type='info'){
+    const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className=`toast ${type}`;
+    const ic={success:'fa-circle-check',info:'fa-circle-info',warn:'fa-triangle-exclamation',error:'fa-circle-xmark'};
+    t.innerHTML=`<i class="fa-solid ${ic[type]||ic.info}"></i> ${msg}`;c.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},2600);
+}
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function populateSourceSelect(el,key){el.innerHTML='';sourceList.forEach(s=>{const o=document.createElement('option');o.value=s.key;o.textContent=s.label;if(s.key===key)o.selected=true;el.appendChild(o)})}
+function badgeCls(t){return t==='1D'?'badge-1d':t==='1T'?'badge-1t':t==='3D'?'badge-3d':'badge-1c'}
+function typeActiveCls(t){return`active-${t.toLowerCase()}`}
+function showSrcOrTxt(t,pfx){document.getElementById(`${pfx}FieldSource`).style.display=(t==='1D'||t==='3D')?'block':'none';document.getElementById(`${pfx}FieldText`).style.display=t==='1T'?'block':'none'}
+function getFontLabel(v){const f=FONT_LIST.find(ff=>ff.value===v);return f?f.label:v.split(',')[0].replace(/'/g,'')}
+// Bangun string style singkat: "B" / "I" / "BI" / ""
+function styleTag(b,i){return(b&&i)?'BI':b?'B':i?'I':''}
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+toggleLeftBtn.addEventListener('click',()=>{leftVisible=!leftVisible;sidebarLeft.classList.toggle('hidden',!leftVisible);toggleLeftBtn.classList.toggle('shifted',leftVisible)});
+toggleRightBtn.addEventListener('click',()=>{rightVisible=!rightVisible;sidebarRight.classList.toggle('hidden',!rightVisible);toggleRightBtn.classList.toggle('shifted',rightVisible)});
+
+// ============================================================
+// RENDERING
+// ============================================================
+function resizeCanvas(){
+    canvas.width=labelW;canvas.height=labelH;
+    canvas.style.width=(labelW*zoom)+'px';canvas.style.height=(labelH*zoom)+'px';
+    canvasFrame.style.width=(labelW*zoom)+'px';canvasFrame.style.height=(labelH*zoom)+'px';
+}
+function drawLabel(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#FFF';ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(guidesEnabled){
+        ctx.strokeStyle='rgba(200,210,225,.22)';ctx.lineWidth=.5;
+        for(let x=0;x<=canvas.width;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}
+        for(let y=0;y<=canvas.height;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}
+    }
+    ctx.strokeStyle='#94a3b8';ctx.lineWidth=1.5;ctx.strokeRect(1,1,canvas.width-2,canvas.height-2);
+    if(!designItems.length){ctx.font='14px "DM Sans",sans-serif';ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('Belum ada elemen. Klik "Tambah Elemen".',canvas.width/2,canvas.height/2);ctx.textAlign='start'}
+    for(let i=0;i<designItems.length;i++)drawItem(designItems[i],i===selectedIndex);
+    document.getElementById('sizeIndicator').textContent=`${labelW} × ${labelH} mm`;
+    document.getElementById('toolbarSize').textContent=`${labelW} × ${labelH}`;
+}
+
+function buildFontStr(item) {
+    const ff = item.fontFamily || DEFAULT_FONT;
+    const fs = Math.max(6, item.fontSize || 12);
+    const b = item.fontBold ? 'bold ' : '';
+    const it = item.fontItalic ? 'italic ' : '';
+    return `${it}${b}${fs}px ${ff}`;
+}
+
+function drawItem(item, sel){
+    const{x,y,width:w,height:h}=item;
+    const txt=getItemText(item);
+    ctx.save();
+    if(sel){
+        ctx.fillStyle='rgba(34,211,167,.07)';ctx.fillRect(x-3,y-3,w+6,h+6);
+        ctx.strokeStyle='#22d3a7';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.strokeRect(x-3,y-3,w+6,h+6);ctx.setLineDash([]);
+        const hs=5;ctx.fillStyle='#22d3a7';
+        [[x-3,y-3],[x+w+3,y-3],[x-3,y+h+3],[x+w+3,y+h+3]].forEach(([cx,cy])=>ctx.fillRect(cx-hs/2,cy-hs/2,hs,hs));
+    }
+    if(item.isBarcode||item.type==="3D"){
+        const fs=Math.max(6,item.fontSize||12);
+        ctx.font=`bold ${Math.max(8,fs-1)}px ${item.fontFamily||DEFAULT_FONT}`;
+        ctx.fillStyle='#111';ctx.fillText(txt,x,y+fs);
+        let bx=x;for(let c=0;c<txt.length;c++){const code=txt.charCodeAt(c);for(let b=0;b<3;b++){const bw=((code*(b+1)+c*7)%4)+1;ctx.fillStyle='#111';ctx.fillRect(bx,y+fs+4,bw,h-fs-6);bx+=bw+1;ctx.fillStyle='#fff';ctx.fillRect(bx,y+fs+4,1,h-fs-6);bx+=1}}
+    }else if(item.type==="1T"){
+        // Teks statis: gunakan bold/italic dari item, TAPI jika keduanya false, tetap bold sebagai default header
+        const fs=Math.max(6,item.fontSize||12);
+        const b=item.fontBold!==false?'bold ':'';
+        const it=item.fontItalic?'italic ':'';
+        ctx.font=`${it}${b}${fs}px ${item.fontFamily||DEFAULT_FONT}`;
+        ctx.fillStyle='#0f172a';ctx.fillText(txt,x,y+fs);
+    }else{
+        ctx.font=buildFontStr(item);ctx.fillStyle='#1e293b';ctx.fillText(txt,x,y+item.fontSize);
+    }
+    if(guidesEnabled&&!sel){ctx.font='7px "DM Sans",sans-serif';ctx.fillStyle='rgba(148,163,184,.4)';ctx.fillText((item.alias||'').substring(0,22),x,y-3)}
+    ctx.restore();
+}
+
+// ============================================================
+// CANVAS INTERAKSI
+// ============================================================
+function getCoords(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)}}
+function hitTest(mx,my){for(let i=designItems.length-1;i>=0;i--){const it=designItems[i];if(mx>=it.x&&mx<=it.x+it.width&&my>=it.y-4&&my<=it.y+it.height+4)return i}return-1}
+canvas.addEventListener('mousedown',e=>{const{x,y}=getCoords(e),hit=hitTest(x,y);if(hit!==-1){selectedIndex=hit;dragging=true;dragOffsetX=x-designItems[hit].x;dragOffsetY=y-designItems[hit].y;canvas.style.cursor='grabbing'}else{selectedIndex=-1;dragging=false}updatePropPanel();renderItemList();drawLabel()});
+canvas.addEventListener('mousemove',e=>{const{x,y}=getCoords(e);document.getElementById('toolbarMouse').textContent=`${Math.round(x)}, ${Math.round(y)}`;if(dragging&&selectedIndex!==-1){designItems[selectedIndex].x=snap(x-dragOffsetX);designItems[selectedIndex].y=snap(y-dragOffsetY);updatePropPanel();drawLabel()}else canvas.style.cursor=hitTest(x,y)!==-1?'grab':'default'});
+canvas.addEventListener('mouseup',()=>{if(dragging){dragging=false;canvas.style.cursor='grab';renderItemList()}});
+canvas.addEventListener('mouseleave',()=>{dragging=false;document.getElementById('toolbarMouse').textContent='—'});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect(),x=(t.clientX-r.left)*(canvas.width/r.width),y=(t.clientY-r.top)*(canvas.height/r.height),hit=hitTest(x,y);if(hit!==-1){selectedIndex=hit;dragging=true;dragOffsetX=x-designItems[hit].x;dragOffsetY=y-designItems[hit].y}else selectedIndex=-1;updatePropPanel();renderItemList();drawLabel()},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!dragging||selectedIndex===-1)return;const t=e.touches[0],r=canvas.getBoundingClientRect(),x=(t.clientX-r.left)*(canvas.width/r.width),y=(t.clientY-r.top)*(canvas.height/r.height);designItems[selectedIndex].x=snap(x-dragOffsetX);designItems[selectedIndex].y=snap(y-dragOffsetY);updatePropPanel();drawLabel()},{passive:false});
+canvas.addEventListener('touchend',()=>{dragging=false;renderItemList()});
+
+// ============================================================
+// PROPERTI PANEL (sidebar kanan)
+// ============================================================
+function updatePropPanel(){
+    const empty=document.getElementById('propEmpty'),content=document.getElementById('propContent'),ts=document.getElementById('toolbarSelected');
+    if(selectedIndex===-1||!designItems[selectedIndex]){empty.style.display='block';content.style.display='none';ts.textContent='—';return}
+    const item=designItems[selectedIndex];empty.style.display='none';content.style.display='block';
+    ts.textContent=`#${item.seq} ${item.alias}`;
+    document.getElementById('propTypeBadge').className=`item-type-badge ${badgeCls(item.type)}`;document.getElementById('propTypeBadge').textContent=item.type;
+    document.getElementById('propAliasDisplay').textContent=item.alias;
+    document.getElementById('propSeq').textContent=`#${item.seq}`;
+    document.getElementById('propSource').textContent=item.source||'—';
+    document.getElementById('propTextPreview').textContent=getItemText(item);
+    document.getElementById('propFont').value=item.fontFamily||DEFAULT_FONT;
+    setStyleToggle('propBold','propItalic',item.fontBold,item.fontItalic);
+    document.getElementById('propX').value=item.x;document.getElementById('propY').value=item.y;
+    document.getElementById('propW').value=item.width;document.getElementById('propH').value=item.height;
+    document.getElementById('propFS').value=item.fontSize;document.getElementById('propCustomText').value=item.customText||'';
+}
+function applyPropChanges(){
+    if(selectedIndex===-1)return;const item=designItems[selectedIndex];
+    item.x=parseInt(document.getElementById('propX').value)||0;item.y=parseInt(document.getElementById('propY').value)||0;
+    item.width=Math.max(10,parseInt(document.getElementById('propW').value)||40);item.height=Math.max(10,parseInt(document.getElementById('propH').value)||20);
+    item.fontSize=Math.max(6,parseInt(document.getElementById('propFS').value)||12);
+    item.fontFamily=document.getElementById('propFont').value||DEFAULT_FONT;
+    const st=readStyleToggle('propBold','propItalic');item.fontBold=st.bold;item.fontItalic=st.italic;
+    item.customText=document.getElementById('propCustomText').value.trim()||null;
+    renderItemList();drawLabel();showToast(`#${item.seq} "${item.alias}" diperbarui`,'success');
+}
+function resetSelectedPos(){
+    if(selectedIndex===-1)return;const item=designItems[selectedIndex],defs=getDefaultItems(),def=defs.find(d=>d.seq===item.seq);
+    if(def){item.x=def.x;item.y=def.y;item.width=def.width;item.height=def.height;item.fontSize=def.fontSize;item.fontFamily=def.fontFamily;item.fontBold=def.fontBold;item.fontItalic=def.fontItalic;item.customText=def.customText}
+    else{item.x=20;item.y=20;item.width=150;item.height=24;item.fontSize=12;item.fontFamily=DEFAULT_FONT;item.fontBold=false;item.fontItalic=false;item.customText=null}
+    updatePropPanel();renderItemList();drawLabel();showToast(`#${item.seq} direset`,'info');
+}
+
+// Bold/italic di panel properti langsung apply saat diklik
+initStyleToggle('propBold','propItalic',applyPropChanges);
+document.getElementById('propFont').addEventListener('change',applyPropChanges);
+
+// ============================================================
+// DAFTAR ELEMEN
+// ============================================================
+function renderItemList(){
+    const c=document.getElementById('itemList');c.innerHTML='';document.getElementById('itemCount').textContent=designItems.length;
+    if(!designItems.length){c.innerHTML='<div class="empty-state"><i class="fa-solid fa-ghost"></i><p>Belum ada elemen</p></div>';return}
+    designItems.forEach((item,idx)=>{
+        const row=document.createElement('div');row.className=`item-row ${selectedIndex===idx?'active':''}`;
+        const fl=getFontLabel(item.fontFamily),st=styleTag(item.fontBold,item.fontItalic);
+        row.innerHTML=`<span class="item-type-badge ${badgeCls(item.type)}">${item.type}</span><div class="item-info"><div class="item-name">#${item.seq} ${item.alias||item.source||'Custom'}</div><div class="item-coord">X:${item.x} Y:${item.y} · ${fl} ${item.fontSize}px${st?' <span style="color:var(--accent)">['+st+']</span>':''}</div></div><button class="item-delete" data-idx="${idx}"><i class="fa-solid fa-xmark"></i></button>`;
+        row.addEventListener('click',e=>{if(e.target.closest('.item-delete'))return;selectedIndex=idx;updatePropPanel();renderItemList();drawLabel()});
+        row.querySelector('.item-delete').addEventListener('click',e=>{e.stopPropagation();requestDelete(idx)});
+        c.appendChild(row);
+    });
+}
+
+// ============================================================
+// TAMBAH ELEMEN
+// ============================================================
+function openAddModal(){
+    addModalType="1D";document.getElementById('addAlias').value='';document.getElementById('addX').value=20;
+    document.getElementById('addY').value=designItems.length?Math.max(...designItems.map(i=>i.y+i.height))+20:20;
+    document.getElementById('addW').value=200;document.getElementById('addH').value=24;document.getElementById('addFS').value=12;document.getElementById('addText').value='';
+    setStyleToggle('addBold','addItalic',false,false);
+    updateAddTypeUI();populateSourceSelect(document.getElementById('addSource'),sourceList[0]?.key||'');
+    populateFontSelect(document.getElementById('addFont'),DEFAULT_FONT);
+    openModal('addModal');
+}
+function updateAddTypeUI(){document.querySelectorAll('#addTypeSelector .type-option').forEach(el=>{el.className='type-option'+(el.dataset.type===addModalType?` ${typeActiveCls(addModalType)}`:'')});showSrcOrTxt(addModalType,'add')}
+document.querySelectorAll('#addTypeSelector .type-option').forEach(el=>el.addEventListener('click',()=>{addModalType=el.dataset.type;updateAddTypeUI()}));
+document.getElementById('addCancel').addEventListener('click',()=>closeModal('addModal'));
+document.getElementById('addConfirm').addEventListener('click',()=>{
+    const alias=document.getElementById('addAlias').value.trim()||`Elemen ${nextSeq}`;
+    let source=null,customText=null,isBarcode=false;
+    if(addModalType==='1D')source=document.getElementById('addSource').value;
+    else if(addModalType==='3D'){source=document.getElementById('addSource').value;isBarcode=true}
+    else if(addModalType==='1T')customText=document.getElementById('addText').value.trim()||'(kosong)';
+    const st=readStyleToggle('addBold','addItalic');
+    designItems.push({seq:nextSeq++,x:snap(+document.getElementById('addX').value||20),y:snap(+document.getElementById('addY').value||20),type:addModalType,source,alias,width:Math.max(10,+document.getElementById('addW').value||100),height:Math.max(10,+document.getElementById('addH').value||20),fontSize:Math.max(6,+document.getElementById('addFS').value||12),fontFamily:document.getElementById('addFont').value||DEFAULT_FONT,fontBold:st.bold,fontItalic:st.italic,customText,isBarcode});
+    selectedIndex=designItems.length-1;closeModal('addModal');updatePropPanel();renderItemList();drawLabel();showToast(`"${alias}" ditambahkan`,'success');
+});
+document.getElementById('btnAddElement').addEventListener('click',openAddModal);
+
+// ============================================================
+// EDIT ELEMEN (MODAL)
+// ============================================================
+function openEditModal(){
+    if(selectedIndex===-1){showToast('Pilih elemen dulu','warn');return}
+    editingIndex=selectedIndex;const item=designItems[editingIndex];editModalType=item.type;
+    document.getElementById('editModalSub').textContent=`#${item.seq} ${item.alias}`;
+    document.getElementById('editAlias').value=item.alias||'';document.getElementById('editX').value=item.x;document.getElementById('editY').value=item.y;
+    document.getElementById('editW').value=item.width;document.getElementById('editH').value=item.height;document.getElementById('editFS').value=item.fontSize;
+    document.getElementById('editText').value=item.customText||'';populateSourceSelect(document.getElementById('editSource'),item.source||'');
+    populateFontSelect(document.getElementById('editFont'),item.fontFamily||DEFAULT_FONT);
+    setStyleToggle('editBold','editItalic',item.fontBold,item.fontItalic);
+    updateEditTypeUI();openModal('editModal');
+}
+function updateEditTypeUI(){document.querySelectorAll('#editTypeSelector .type-option').forEach(el=>{el.className='type-option'+(el.dataset.type===editModalType?` ${typeActiveCls(editModalType)}`:'')});showSrcOrTxt(editModalType,'edit')}
+document.querySelectorAll('#editTypeSelector .type-option').forEach(el=>el.addEventListener('click',()=>{editModalType=el.dataset.type;updateEditTypeUI()}));
+document.getElementById('editCancel').addEventListener('click',()=>closeModal('editModal'));
+document.getElementById('editConfirm').addEventListener('click',()=>{
+    if(editingIndex===-1||!designItems[editingIndex])return;const item=designItems[editingIndex];
+    item.type=editModalType;item.alias=document.getElementById('editAlias').value.trim()||item.alias;
+    item.x=+document.getElementById('editX').value||0;item.y=+document.getElementById('editY').value||0;
+    item.width=Math.max(10,+document.getElementById('editW').value||40);item.height=Math.max(10,+document.getElementById('editH').value||20);
+    item.fontSize=Math.max(6,+document.getElementById('editFS').value||12);
+    item.fontFamily=document.getElementById('editFont').value||DEFAULT_FONT;
+    const st=readStyleToggle('editBold','editItalic');item.fontBold=st.bold;item.fontItalic=st.italic;
+    if(editModalType==='1D'||editModalType==='3D'){item.source=document.getElementById('editSource').value;item.customText=null;item.isBarcode=editModalType==='3D'}
+    else if(editModalType==='1T'){item.source=null;item.customText=document.getElementById('editText').value.trim()||null;item.isBarcode=false}
+    closeModal('editModal');updatePropPanel();renderItemList();drawLabel();showToast(`#${item.seq} "${item.alias}" disimpan`,'success');
+});
+document.getElementById('btnEditInModal').addEventListener('click',openEditModal);
+
+// ============================================================
+// HAPUS ELEMEN
+// ============================================================
+function requestDelete(idx){
+    if(idx<0||idx>=designItems.length)return;deletingIndex=idx;
+    const item=designItems[idx];document.getElementById('deleteModalSub').textContent=`#${item.seq} ${item.alias} (${item.type})`;
+    document.getElementById('deleteTitle').textContent='Hapus Elemen';
+    document.getElementById('deleteMsg').textContent='Elemen yang dihapus tidak dapat dikembalikan.';
+    document.getElementById('deleteConfirm').innerHTML='<i class="fa-solid fa-trash"></i> Ya, Hapus';
+    openModal('deleteModal');
+}
+function confirmDelete(){
+    if(deletingIndex===-1||!designItems[deletingIndex])return;const item=designItems[deletingIndex],name=`#${item.seq} ${item.alias}`;
+    designItems.splice(deletingIndex,1);
+    if(selectedIndex===deletingIndex)selectedIndex=-1;else if(selectedIndex>deletingIndex)selectedIndex--;
+    deletingIndex=-1;closeModal('deleteModal');updatePropPanel();renderItemList();drawLabel();showToast(`"${name}" dihapus`,'error');
+}
+document.getElementById('deleteCancel').addEventListener('click',()=>{deletingIndex=-1;closeModal('deleteModal')});
+document.getElementById('deleteConfirm').addEventListener('click',confirmDelete);
+document.getElementById('btnDeleteSelected').addEventListener('click',()=>{if(selectedIndex===-1){showToast('Pilih elemen dulu','warn');return}requestDelete(selectedIndex)});
+
+// ============================================================
+// UKURAN LABEL & PRESET
+// ============================================================
+function renderPresets(){const c=document.getElementById('presetChips');c.innerHTML='';labelPresets.forEach(p=>{const ch=document.createElement('span');ch.className=`chip ${p.w===labelW&&p.h===labelH?'active':''}`;ch.textContent=p.name;ch.addEventListener('click',()=>{document.getElementById('labelW').value=p.w;document.getElementById('labelH').value=p.h;applyLabelSize(p.w,p.h)});c.appendChild(ch)})}
+async function applyLabelSize(w,h){
+    if(w<labelW*.4||h<labelH*.4){
+        const ok=await new Promise(resolve=>{
+            deletingIndex=-999;document.getElementById('deleteModalSub').textContent=`${w}×${h} mm`;
+            document.getElementById('deleteTitle').textContent='Peringatan Ukuran';
+            document.getElementById('deleteMsg').textContent='Beberapa elemen mungkin di luar area label setelah resize.';
+            document.getElementById('deleteConfirm').innerHTML='Ya, Lanjutkan';
+            document.getElementById('deleteConfirm').onclick=()=>{closeModal('deleteModal');resolve(true)};
+            document.getElementById('deleteCancel').onclick=()=>{closeModal('deleteModal');resolve(false)};
+            openModal('deleteModal');
+        });if(!ok)return;
+    }
+    labelW=w;labelH=h;resizeCanvas();drawLabel();renderPresets();showToast(`Ukuran: ${w}×${h} mm`,'success');
+}
+document.getElementById('btnApplyLabelSize').addEventListener('click',()=>{const w=Math.max(50,+document.getElementById('labelW').value||650),h=Math.max(50,+document.getElementById('labelH').value||550);document.getElementById('labelW').value=w;document.getElementById('labelH').value=h;applyLabelSize(w,h)});
+
+// ============================================================
+// ZOOM
+// ============================================================
+function setZoom(z){zoom=Math.max(.1,Math.min(3,z));canvas.style.width=(labelW*zoom)+'px';canvas.style.height=(labelH*zoom)+'px';canvasFrame.style.width=(labelW*zoom)+'px';canvasFrame.style.height=(labelH*zoom)+'px';document.getElementById('zoomDisplay').textContent=Math.round(zoom*100)+'%'}
+function zoomToFit(){const r=viewport.getBoundingClientRect();setZoom(Math.min((r.width-50)/labelW,(r.height-50)/labelH,2))}
+document.getElementById('btnZoomIn').addEventListener('click',()=>setZoom(zoom+.1));
+document.getElementById('btnZoomOut').addEventListener('click',()=>setZoom(zoom-.1));
+document.getElementById('btnZoomFit').addEventListener('click',zoomToFit);
+viewport.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom+(e.deltaY>0?-.05:.05))}},{passive:false});
+
+// ============================================================
+// TOGGLES
+// ============================================================
+document.getElementById('toggleSnap').addEventListener('click',function(){snapEnabled=!snapEnabled;this.classList.toggle('on',snapEnabled);showToast(snapEnabled?'Snap aktif':'Snap nonaktif','info')});
+document.getElementById('toggleGuides').addEventListener('click',function(){guidesEnabled=!guidesEnabled;this.classList.toggle('on',guidesEnabled);drawLabel();showToast(guidesEnabled?'Panduan on':'Panduan off','info')});
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.getElementById('btnApplyProp').addEventListener('click',applyPropChanges);
+document.getElementById('btnResetPos').addEventListener('click',resetSelectedPos);
+['propX','propY','propW','propH','propFS','propCustomText'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')applyPropChanges()}));
+document.getElementById('btnRefresh').addEventListener('click',()=>{drawLabel();showToast('Canvas di-refresh','success')});
+document.getElementById('btnExportConfig').addEventListener('click',()=>{
+    const cfg={labelWidth:labelW,labelHeight:labelH,items:designItems.map(it=>({seq:it.seq,x:it.x,y:it.y,width:it.width,height:it.height,fontSize:it.fontSize,fontFamily:it.fontFamily,fontBold:it.fontBold,fontItalic:it.fontItalic,type:it.type,source:it.source,alias:it.alias,customText:it.customText,isBarcode:it.isBarcode||false}))};
+    const json=JSON.stringify(cfg,null,2);navigator.clipboard.writeText(json).then(()=>showToast('JSON disalin','success')).catch(()=>{const ta=document.createElement('textarea');ta.value=json;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('JSON disalin','success')});
+});
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+    if(e.key==='Escape'){
+        if(document.getElementById('addModal').classList.contains('show')){closeModal('addModal');return}
+        if(document.getElementById('editModal').classList.contains('show')){closeModal('editModal');return}
+        if(document.getElementById('deleteModal').classList.contains('show')){deletingIndex=-1;closeModal('deleteModal');return}
+        selectedIndex=-1;updatePropPanel();renderItemList();drawLabel();return;
+    }
+    if((e.key==='Delete'||e.key==='Backspace')&&selectedIndex!==-1){e.preventDefault();requestDelete(selectedIndex);return}
+    if(selectedIndex!==-1){const step=snapEnabled?5:1;const item=designItems[selectedIndex];let m=false;if(e.key==='ArrowLeft'){item.x-=step;m=true}if(e.key==='ArrowRight'){item.x+=step;m=true}if(e.key==='ArrowUp'){item.y-=step;m=true}if(e.key==='ArrowDown'){item.y+=step;m=true}if(m){e.preventDefault();updatePropPanel();renderItemList();drawLabel()}}
+    // Ctrl+B toggle bold, Ctrl+I toggle italic
+    if((e.ctrlKey||e.metaKey)&&selectedIndex!==-1){
+        if(e.key==='b'||e.key==='B'){e.preventDefault();document.getElementById('propBold').classList.toggle('active');applyPropChanges();return}
+        if(e.key==='i'||e.key==='I'){e.preventDefault();document.getElementById('propItalic').classList.toggle('active');applyPropChanges();return}
+    }
+    if(e.key==='+'||e.key==='='){setZoom(zoom+.1);e.preventDefault()}if(e.key==='-'){setZoom(zoom-.1);e.preventDefault()}if(e.key==='0'){zoomToFit();e.preventDefault()}
+});
+['addModal','editModal','deleteModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id)){if(id==='deleteModal')deletingIndex=-1;closeModal(id)}}));
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+    populateFontSelect(document.getElementById('propFont'),DEFAULT_FONT);
+    resizeCanvas();renderPresets();renderItemList();updatePropPanel();drawLabel();requestAnimationFrame(zoomToFit);
+}
+init();
+</script>
+</body>
+</html>
